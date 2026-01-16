@@ -3,14 +3,14 @@
 // Client detail page
 // Shows client information and list of sessions
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import SessionList from '@/components/SessionList'
 import SessionFilter from '@/components/SessionFilter'
 
-export default function ClientDetailPage() {
+function ClientDetailPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const clientId = params.clientId
@@ -167,5 +167,17 @@ export default function ClientDetailPage() {
         platformFilter={platformFilter}
       />
     </div>
+  )
+}
+
+export default function ClientDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <ClientDetailPageContent />
+    </Suspense>
   )
 }

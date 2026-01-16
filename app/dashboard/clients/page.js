@@ -3,14 +3,14 @@
 // Clients list page
 // Shows all clients with search and pagination
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import ClientSearch from '@/components/ClientSearch'
 import ClientList from '@/components/ClientList'
 
-export default function ClientsPage() {
+function ClientsPageContent() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState(null)
   const [clients, setClients] = useState([])
@@ -114,5 +114,17 @@ export default function ClientsPage() {
         search={search}
       />
     </div>
+  )
+}
+
+export default function ClientsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <ClientsPageContent />
+    </Suspense>
   )
 }
