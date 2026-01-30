@@ -7,6 +7,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 
 function LoginForm() {
   const router = useRouter()
@@ -18,18 +19,24 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [configError, setConfigError] = useState('')
 
-  // Check if Supabase is configured on mount
+  // Check if Supabase is configured and if user already has a stored session (persisted in localStorage)
   useEffect(() => {
-    const checkConfig = () => {
+    const checkConfigAndSession = async () => {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL
       const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       
       if (!url || !key || url.includes('placeholder') || key.includes('placeholder')) {
         setConfigError('Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.')
+        return
+      }
+      // If user already has a session in localStorage, redirect to dashboard so they don't have to log in again
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.replace('/dashboard')
       }
     }
-    checkConfig()
-  }, [])
+    checkConfigAndSession()
+  }, [router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
