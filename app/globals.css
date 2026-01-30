@@ -6,6 +6,12 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  /* Safe area for notched devices */
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  /* Dark green theme accents */
+  --accent-green: 22 163 74;   /* green-600 */
+  --accent-green-dark: 21 128 61; /* green-700 */
 }
 
 body {
@@ -16,4 +22,5 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  -webkit-tap-highlight-color: transparent;
 }

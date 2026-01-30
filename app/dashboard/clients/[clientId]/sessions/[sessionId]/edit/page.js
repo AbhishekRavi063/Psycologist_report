@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-// New session creation page
-// Form to create a new session file inside a client folder
+// Edit session page
+// Form to update session details
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
-export default function NewSessionPage() {
-  const router = useRouter()
-  const params = useParams()
-  const clientId = params.clientId
+export default function EditSessionPage() {
+  const params = useParams();
+  const clientId = params.clientId;
+  const sessionId = params.sessionId;
 
   const [formData, setFormData] = useState({
     platform: '',
@@ -19,108 +19,136 @@ export default function NewSessionPage() {
     session_date: '',
     summary: '',
     conditions: '',
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [existingPlatforms, setExistingPlatforms] = useState([])
-  const [showCustomPlatform, setShowCustomPlatform] = useState(false)
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [existingPlatforms, setExistingPlatforms] = useState([]);
+  const [showCustomPlatform, setShowCustomPlatform] = useState(false);
 
   useEffect(() => {
-    // Fetch existing platforms for this client
-    const fetchPlatforms = async () => {
-      const { data } = await supabase
-        .from('sessions')
-        .select('platform')
-        .eq('client_id', clientId)
+    const loadSession = async () => {
+      try {
+        const { data: sessionData, error: fetchError } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('id', sessionId)
+          .eq('client_id', clientId)
+          .single();
 
-      if (data) {
-        const platforms = [...new Set(data.map(s => s.platform))].sort()
-        setExistingPlatforms(platforms)
+        if (fetchError || !sessionData) {
+          setError('Session not found');
+          setFetching(false);
+          return;
+        }
+
+        const isOther = sessionData.platform && !['koott', 'littlecare'].includes(sessionData.platform);
+        setFormData({
+          platform: isOther ? 'Other' : (sessionData.platform || ''),
+          customPlatform: isOther ? sessionData.platform : '',
+          session_date: sessionData.session_date ? sessionData.session_date.split('T')[0] : '',
+          summary: sessionData.summary || '',
+          conditions: sessionData.conditions || '',
+        });
+        setShowCustomPlatform(!!isOther);
+
+        const { data: allSessions } = await supabase
+          .from('sessions')
+          .select('platform')
+          .eq('client_id', clientId);
+        if (allSessions) {
+          const platforms = [...new Set(allSessions.map((s) => s.platform))].sort();
+          setExistingPlatforms(platforms);
+        }
+      } catch (err) {
+        setError('Failed to load session');
+      } finally {
+        setFetching(false);
       }
-    }
-
-    fetchPlatforms()
-  }, [clientId])
+    };
+    loadSession();
+  }, [clientId, sessionId]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-
-    // Show custom platform input if "Other" is selected
-    if (name === 'platform' && value === 'Other') {
-      setShowCustomPlatform(true)
-    } else if (name === 'platform') {
-      setShowCustomPlatform(false)
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'platform') {
+      setShowCustomPlatform(value === 'Other');
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // Validate required fields
     if (!formData.platform) {
-      setError('Platform is required')
-      setLoading(false)
-      return
+      setError('Platform is required');
+      setLoading(false);
+      return;
     }
-
     if (formData.platform === 'Other' && !formData.customPlatform.trim()) {
-      setError('Please specify the custom platform name')
-      setLoading(false)
-      return
+      setError('Please specify the custom platform name');
+      setLoading(false);
+      return;
     }
-
     if (!formData.session_date) {
-      setError('Session date is required')
-      setLoading(false)
-      return
+      setError('Session date is required');
+      setLoading(false);
+      return;
     }
 
     try {
-      // Determine the platform to use
-      const platform = formData.platform === 'Other' 
-        ? formData.customPlatform.trim() 
-        : formData.platform
+      const platform =
+        formData.platform === 'Other' ? formData.customPlatform.trim() : formData.platform;
 
-      // Insert new session
-      const { data, error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from('sessions')
-        .insert([
-          {
-            client_id: clientId,
-            platform: platform,
-            session_date: formData.session_date,
-            session_time: '00:00:00', // Default time since not required
-            summary: formData.summary.trim() || null,
-            conditions: formData.conditions.trim() || null,
-          },
-        ])
-        .select()
-        .single()
+        .update({
+          platform,
+          session_date: formData.session_date,
+          summary: formData.summary.trim() || null,
+          conditions: formData.conditions.trim() || null,
+        })
+        .eq('id', sessionId)
+        .eq('client_id', clientId);
 
-      if (insertError) {
-        setError(insertError.message || 'Failed to create session')
-        setLoading(false)
-        return
+      if (updateError) {
+        setError(updateError.message || 'Failed to update session');
+        setLoading(false);
+        return;
       }
-
-      if (data) {
-        // Redirect back to client page using window.location to preserve session
-        window.location.href = `/dashboard/clients/${clientId}`
-      }
+      window.location.href = `/dashboard/clients/${clientId}`;
     } catch (err) {
-      setError('An unexpected error occurred')
-      setLoading(false)
+      setError('An unexpected error occurred');
+      setLoading(false);
     }
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
   }
 
-  // Get today's date in YYYY-MM-DD format for the date input
-  const today = new Date().toISOString().split('T')[0]
+  if (error && !formData.session_date) {
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center">
+        <h3 className="text-lg font-medium text-gray-900">Session not found</h3>
+        <p className="mt-2 text-sm text-gray-500">{error}</p>
+        <Link
+          href={`/dashboard/clients/${clientId}`}
+          className="mt-4 inline-block text-sm text-green-700 hover:text-green-600"
+        >
+          ← Back to Client
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -131,10 +159,8 @@ export default function NewSessionPage() {
         >
           ← Back to Client
         </Link>
-        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">New Session</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Add a new session file
-        </p>
+        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Edit Session</h2>
+        <p className="mt-1 text-sm text-gray-600">Update session details</p>
       </div>
 
       <div className="bg-white shadow rounded-lg p-4 sm:p-6">
@@ -146,10 +172,7 @@ export default function NewSessionPage() {
           )}
 
           <div>
-            <label
-              htmlFor="platform"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="platform" className="block text-sm font-medium text-gray-700">
               Platform <span className="text-red-500">*</span>
             </label>
             <select
@@ -164,7 +187,7 @@ export default function NewSessionPage() {
               <option value="koott">koott</option>
               <option value="littlecare">littlecare</option>
               {existingPlatforms
-                .filter(p => p !== 'koott' && p !== 'littlecare')
+                .filter((p) => p !== 'koott' && p !== 'littlecare')
                 .map((platform) => (
                   <option key={platform} value={platform}>
                     {platform}
@@ -176,10 +199,7 @@ export default function NewSessionPage() {
 
           {showCustomPlatform && (
             <div>
-              <label
-                htmlFor="customPlatform"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="customPlatform" className="block text-sm font-medium text-gray-700">
                 Custom Platform Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -196,10 +216,7 @@ export default function NewSessionPage() {
           )}
 
           <div>
-            <label
-              htmlFor="session_date"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="session_date" className="block text-sm font-medium text-gray-700">
               Session Date <span className="text-red-500">*</span>
             </label>
             <input
@@ -215,10 +232,7 @@ export default function NewSessionPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="summary"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="summary" className="block text-sm font-medium text-gray-700">
               Summary
             </label>
             <textarea
@@ -233,10 +247,7 @@ export default function NewSessionPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="conditions"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="conditions" className="block text-sm font-medium text-gray-700">
               Conditions
             </label>
             <textarea
@@ -262,11 +273,11 @@ export default function NewSessionPage() {
               disabled={loading}
               className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Session'}
+              {loading ? 'Saving...' : 'Save changes'}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

@@ -119,7 +119,7 @@ function ClientDetailPageContent() {
         </p>
         <Link
           href="/dashboard/clients"
-          className="mt-4 inline-block text-sm text-indigo-600 hover:text-indigo-500"
+          className="mt-4 inline-block text-sm text-green-700 hover:text-green-600"
         >
           ← Back to Clients
         </Link>
@@ -130,42 +130,99 @@ function ClientDetailPageContent() {
   const totalPages = Math.ceil(count / itemsPerPage)
 
   return (
-    <div>
-      <div className="mb-8">
-        <Link
-          href="/dashboard/clients"
-          className="text-sm text-indigo-600 hover:text-indigo-500 mb-4 inline-block"
-        >
-          ← Back to Clients
-        </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">{client.name}</h2>
-            <div className="mt-2 text-sm text-gray-600">
-              {client.email && <span className="mr-4">Email: {client.email}</span>}
-              {client.age && <span className="mr-4">Age: {client.age}</span>}
-              {client.gender && <span className="mr-4">Gender: {client.gender}</span>}
-              {client.place && <span>Place: {client.place}</span>}
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Header card */}
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
+        <div className="h-1 w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800" />
+        <div className="px-4 py-6 sm:px-8 sm:py-8">
           <Link
-            href={`/dashboard/clients/${clientId}/sessions/new`}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            href="/dashboard/clients"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-green-700 transition-colors mb-4 sm:mb-6"
           >
-            + New Session
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Clients
           </Link>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+                {client.name}
+              </h1>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {client.email && (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                    <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {client.email}
+                  </span>
+                )}
+                {client.age != null && client.age !== '' && (
+                  <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                    {client.age} yrs
+                  </span>
+                )}
+                {client.gender && (
+                  <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                    {client.gender}
+                  </span>
+                )}
+                {client.place && (
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                    <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {client.place}
+                  </span>
+                )}
+              </div>
+            </div>
+            <Link
+              href={`/dashboard/clients/${clientId}/sessions/new`}
+              className="inline-flex w-full sm:w-auto shrink-0 items-center justify-center gap-2 rounded-xl bg-green-700 px-5 py-3 sm:py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors touch-manipulation"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New Session
+            </Link>
+          </div>
         </div>
       </div>
 
-      <SessionFilter platforms={platforms} currentFilter={platformFilter} clientId={clientId} />
-
-      <SessionList
+      {/* Sessions section */}
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/60">
+        <div className="border-b border-slate-200/80 bg-slate-50/50 px-4 py-4 sm:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between min-w-0">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Sessions
+              </h2>
+              <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-0.5 text-sm font-semibold text-green-800">
+                {count} {count === 1 ? 'session' : 'sessions'}
+              </span>
+            </div>
+            <SessionFilter platforms={platforms} currentFilter={platformFilter} clientId={clientId} />
+          </div>
+        </div>
+        <div className="p-0">
+          <SessionList
         sessions={sessions}
         clientId={clientId}
         currentPage={page}
         totalPages={totalPages}
+        totalCount={count}
+        itemsPerPage={itemsPerPage}
         platformFilter={platformFilter}
+        onSessionDeleted={(sessionId) => {
+          setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+          setCount((prev) => Math.max(0, prev - 1));
+        }}
       />
+        </div>
+      </div>
     </div>
   )
 }

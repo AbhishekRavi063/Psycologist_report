@@ -30,17 +30,17 @@ export default function SessionFilter({ platforms, currentFilter, clientId }) {
   }
 
   return (
-    <div className="mb-6">
-      <label htmlFor="platform-filter" className="block text-sm font-medium text-gray-700 mb-2">
-        Filter by Platform
+    <div className="flex items-center gap-2">
+      <label htmlFor="platform-filter" className="text-sm font-medium text-slate-600 whitespace-nowrap">
+        Platform
       </label>
       <select
         id="platform-filter"
         value={currentFilter}
         onChange={handleFilterChange}
-        className="block w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600 min-w-[140px]"
       >
-        <option value="">All Platforms</option>
+        <option value="">All</option>
         {platforms.map((platform) => (
           <option key={platform} value={platform}>
             {platform}

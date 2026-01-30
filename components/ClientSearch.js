@@ -40,18 +40,25 @@ export default function ClientSearch({ initialSearch = '' }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6">
-      <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-md min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+      <div className="relative flex-1 min-w-[160px]">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search clients by name..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Search by name..."
+          className="block w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-500 shadow-sm focus:border-green-600 focus:outline-none focus:ring-1 focus:ring-green-600"
         />
+      </div>
+      <div className="flex gap-2">
         <button
           type="submit"
-          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors"
         >
           Search
         </button>
@@ -59,7 +66,7 @@ export default function ClientSearch({ initialSearch = '' }) {
           <button
             type="button"
             onClick={handleClear}
-            className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 transition-colors"
           >
             Clear
           </button>
