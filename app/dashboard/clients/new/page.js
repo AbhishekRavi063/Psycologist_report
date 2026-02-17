@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import SuccessPopup from '@/components/SuccessPopup'
 
 export default function NewClientPage() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export default function NewClientPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [createdClientId, setCreatedClientId] = useState(null)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -73,8 +76,8 @@ export default function NewClientPage() {
       }
 
       if (data) {
-        // Redirect to the new client's page using window.location to preserve session
-        window.location.href = `/dashboard/clients/${data.id}`
+        setCreatedClientId(data.id)
+        setShowSuccess(true)
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -97,7 +100,11 @@ export default function NewClientPage() {
         </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+      <div className="relative">
+        <div className="absolute right-0 bottom-full flex flex-col justify-end">
+          <img src="/line.png" alt="" className="block max-h-80 sm:max-h-96 w-auto object-contain" />
+        </div>
+        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -215,8 +222,20 @@ export default function NewClientPage() {
               {loading ? 'Creating...' : 'Create Client'}
             </button>
           </div>
+          <div className="-mt-px flex justify-end">
+            <img src="/button%20above.png" alt="" className="h-20 w-auto object-contain sm:h-28" />
+          </div>
         </form>
+        </div>
       </div>
+
+      <SuccessPopup
+        open={showSuccess}
+        onClose={() => {
+          setShowSuccess(false)
+          if (createdClientId) window.location.href = `/dashboard/clients/${createdClientId}`
+        }}
+      />
     </div>
   )
 }

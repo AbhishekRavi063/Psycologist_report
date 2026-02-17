@@ -1,4 +1,5 @@
 import './globals.css'
+import LoadingScreen from '@/components/LoadingScreen'
 
 export const metadata = {
   title: 'Psychologist Record Management',
@@ -14,7 +15,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        {children}
+        <LoadingScreen />
+      </body>
     </html>
   )
 }
